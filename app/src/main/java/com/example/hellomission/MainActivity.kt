@@ -15,6 +15,6 @@ import com.example.hellomission.ui.theme.HellomissionTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        println("hello seewo")
+        println("Working in cvte")
     }
 }
