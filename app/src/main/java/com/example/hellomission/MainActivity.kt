@@ -16,6 +16,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         println("Working in cvte")
-        println("testchange")
+        println("yaoqiaoguang")
+        println("newbranch1")
     }
 }
