@@ -15,6 +15,7 @@ class DoodleActivity : AppCompatActivity() {
     private lateinit var blackButton : Button
     private lateinit var withDrawButton :Button
     private lateinit var cleanButton : Button
+    private lateinit var rubberButton:Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,6 +32,7 @@ class DoodleActivity : AppCompatActivity() {
         blackButton = findViewById(R.id.btn_balck)
         withDrawButton = findViewById(R.id.btn_withDraw)
         cleanButton = findViewById(R.id.btn_clean)
+        rubberButton = findViewById(R.id.btn_rubber)
     }
     private fun initListener(){
         smallButton.setOnClickListener {
@@ -50,6 +52,9 @@ class DoodleActivity : AppCompatActivity() {
         }
         cleanButton.setOnClickListener {
             doodleView.cleanDrawing()
+        }
+        rubberButton.setOnClickListener{
+            doodleView.setPaintColor(PaintColorType.RUBBER)
         }
     }
 

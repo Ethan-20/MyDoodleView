@@ -8,6 +8,7 @@ import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
+import android.graphics.Xfermode
 import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
@@ -37,15 +38,23 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
         paint.color = Color.RED
         paint.style = Paint.Style.STROKE
         // make eraser functional
+        eraserPaint.style = Paint.Style.STROKE;
+        eraserPaint.strokeWidth = 100f
+        eraserPaint.color = Color.TRANSPARENT;
         eraserPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
 
         // It'd be impossible if there's no bitmap and canvas in this view
         //but I don't know the relationship between bitmap and canvas
         //therefore I'll fix it later
     }
+    fun setBitmap(){
+        bitmap = Bitmap.createBitmap(width,height,Bitmap.Config.ARGB_8888)
+        paintCanvas = Canvas(bitmap)
+    }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
 //        Log.d(TAG,"EventAction = ${event!!.action}")
+        val newPaint = if(isEraser) eraserPaint else Paint(paint)
         when(event!!.action){
             MotionEvent.ACTION_DOWN ->
             {
@@ -53,8 +62,6 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
                 startY = event.y
                 mCurrentPath =  Path()
                 mCurrentPath.moveTo(startX,startY)
-                val newPaint = Paint(paint)
-                pathList.add(DrawPathEntry(mCurrentPath,newPaint,isEraser))
             }
 
             MotionEvent.ACTION_MOVE ->{
@@ -62,34 +69,48 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
                 endY = event.y
                 //绘制贝塞尔曲线
                 mCurrentPath.quadTo(startX,startY,endX,endY)
+                paintCanvas.drawPath(mCurrentPath,newPaint)
                 startX = endX
                 startY = endY
                 Log.d(TAG,"i'm moving")
             }
             MotionEvent.ACTION_UP -> {
+                pathList.add(DrawPathEntry(mCurrentPath, newPaint))
             }
         }
         postInvalidate()
         return true
     }
 
+    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+        super.onLayout(changed, left, top, right, bottom)
+        setBitmap()
+    }
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        for (drawPathEntry in pathList) {
-            canvas.drawPath(drawPathEntry.path,drawPathEntry.paint)
+        if (bitmap != null && !bitmap.isRecycled) {
+            canvas.drawBitmap(bitmap,0f,0f,null)
         }
+
     }
 
     //撤销操作
     fun withDraw(){
-        if (pathList.isNotEmpty()) {
-            pathList.removeLast()
-            postInvalidate()
+        if (pathList.isEmpty()) {
+        return
         }
+        pathList.removeLast()
+        //这行代码是把整个canvas变透明
+        paintCanvas.drawColor(Color.TRANSPARENT,PorterDuff.Mode.CLEAR)
+        for (entry in pathList) {
+            paintCanvas.drawPath(entry.path,entry.paint)
+        }
+        postInvalidate()
     }
 
     //清空画板
     fun cleanDrawing(){
+        paintCanvas.drawColor(Color.TRANSPARENT,PorterDuff.Mode.CLEAR)
         pathList.clear()
         postInvalidate()
     }
@@ -112,6 +133,7 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
 
     // 设置画笔颜色
     fun setPaintColor(type:PaintColorType){
+        isEraser = false
         when(type){
             PaintColorType.RED -> {
                 paint.color = Color.RED
@@ -131,6 +153,10 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
             PaintColorType.BLUE -> {
                 paint.color = Color.BLUE
             }
+            PaintColorType.RUBBER -> {
+                isEraser = true
+            }
         }
     }
+
 }
