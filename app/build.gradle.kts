@@ -19,6 +19,9 @@ android {
             useSupportLibrary = true
         }
     }
+    buildFeatures {
+        dataBinding = true
+    }
 
     buildTypes {
         release {
