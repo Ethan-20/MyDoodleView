@@ -21,7 +21,7 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
     private val TAG: String = "DoodleView"
     private val paint: Paint = Paint()
     private val eraserPaint:Paint = Paint()
-    private val pathList = ArrayList<DrawPathEntry>()
+    private var pathList = ArrayList<DrawPathEntry>()
     private lateinit var bitmap:Bitmap
     private lateinit var paintCanvas:Canvas
     private var isEraser = false
@@ -88,7 +88,7 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
     }
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        if (bitmap != null && !bitmap.isRecycled) {
+        if (!bitmap.isRecycled) {
             canvas.drawBitmap(bitmap,0f,0f,null)
         }
 
@@ -97,7 +97,7 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
     //撤销操作
     fun withDraw(){
         if (pathList.isEmpty()) {
-        return
+            return
         }
         pathList.removeLast()
         //这行代码是把整个canvas变透明
@@ -115,7 +115,7 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
         postInvalidate()
     }
 
-    //画笔粗细设置
+    //设置画笔粗细
     fun setPaintWidth(type:PaintWidthType){
         when(type){
             PaintWidthType.small ->{
@@ -131,7 +131,7 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
         }
     }
 
-    // 设置画笔颜色
+    // 设置画笔类型
     fun setPaintColor(type:PaintColorType){
         isEraser = false
         when(type){
@@ -159,4 +159,12 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
         }
     }
 
+    //提供笔迹给工具类
+    fun getPathList():ArrayList<DrawPathEntry>{
+        return pathList
+    }
+    //从xml文件中恢复笔迹
+    fun loadPathList(list:ArrayList<DrawPathEntry>){
+        this.pathList = list
+    }
 }

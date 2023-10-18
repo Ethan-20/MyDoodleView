@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.hellomission.bean.PaintColorType
 import com.example.hellomission.bean.PaintWidthType
 import com.example.hellomission.ui.DoodleView
+import com.example.hellomission.utils.DataUtil
 
 class DoodleActivity : AppCompatActivity() {
     private lateinit var  doodleView: DoodleView
@@ -16,6 +17,7 @@ class DoodleActivity : AppCompatActivity() {
     private lateinit var withDrawButton :Button
     private lateinit var cleanButton : Button
     private lateinit var rubberButton:Button
+    private lateinit var saveButton:Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,6 +35,7 @@ class DoodleActivity : AppCompatActivity() {
         withDrawButton = findViewById(R.id.btn_withDraw)
         cleanButton = findViewById(R.id.btn_clean)
         rubberButton = findViewById(R.id.btn_rubber)
+        saveButton = findViewById(R.id.btn_save)
     }
     private fun initListener(){
         smallButton.setOnClickListener {
@@ -55,6 +58,9 @@ class DoodleActivity : AppCompatActivity() {
         }
         rubberButton.setOnClickListener{
             doodleView.setPaintColor(PaintColorType.RUBBER)
+        }
+        saveButton.setOnClickListener{
+            DataUtil(this).savePathEntry(doodleView.getPathList())
         }
     }
 
