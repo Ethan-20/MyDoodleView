@@ -7,15 +7,18 @@ import com.example.hellomission.utils.ShapeConstant
 
 //用来返回action对象，避免重复创建
 object ActionManager {
-    val actions = HashMap<Int,DrawAction>()
-    fun getAction(shape:Int): DrawAction{
+    val actions = HashMap<ShapeConstant,DrawAction>()
+    fun getAction(shape:ShapeConstant): DrawAction{
         when(shape){
             ShapeConstant.LINE ->{
                 actions.putIfAbsent(shape,LineAction())
             }
             ShapeConstant.CIRCLE->{
                 actions.putIfAbsent(shape,CircleAction())
+            }else -> {
+
             }
+
         }
         return actions.get(shape)!!
     }

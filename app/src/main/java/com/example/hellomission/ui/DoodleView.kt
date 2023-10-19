@@ -24,39 +24,39 @@ import java.lang.ref.WeakReference
 import kotlin.math.sqrt
 
 class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,attrs){
+   //懒加载
     private val TAG: String = "DoodleView"
-    private  var mCurrentPath = Path()
+    private lateinit var mCurrentPath :Path
     private lateinit var drawPathEntry: WeakReference<DrawPathEntry>
     private var action: DrawAction
-    private var pathList =  ArrayList<DrawPathEntry>()
-    private val paint: Paint = Paint()
+    private var pathList = ArrayList<DrawPathEntry>()
+    private val paint: Paint by lazy{ Paint() }
     private lateinit var paintCanvas:Canvas
     private lateinit var bitmap: Bitmap
-    private val eraserPaint:Paint = Paint()
+    private val eraserPaint:Paint by lazy{ Paint() }
     private var isEraser = false
     private var isDrawing = false
     init {
-        //anti Alias
         paint.isAntiAlias = true
 
-        //paint using default style, add later maybe
         paint.color = Color.RED
         paint.style = Paint.Style.STROKE
-        // make eraser functional
+
         eraserPaint.style = Paint.Style.STROKE;
         eraserPaint.strokeWidth = 100f
         eraserPaint.color = Color.TRANSPARENT
         eraserPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
+
         //这里的action实例对象都需要设置成单例
         action = ActionManager.getAction(ShapeConstant.LINE)
 
     }
-    fun setBitmap(){
+    private fun setBitmap(){
         bitmap = Bitmap.createBitmap(width,height,Bitmap.Config.ARGB_8888)
         paintCanvas = Canvas(bitmap)
     }
 
-    fun setAction(shape:Int){
+    fun setAction(shape:ShapeConstant){
         //防止在用橡皮擦时切换成除了线外其他图形
         if(isEraser&&shape!=ShapeConstant.LINE) return
         isEraser = false
@@ -78,9 +78,6 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
             MotionEvent.ACTION_MOVE ->{
                 isDrawing = true
                 action.onMove(event.x,event.y,mCurrentPath)
-                //把path画在bitmap上
-//                if(isEraser) paintCanvas.drawPath(mCurrentPath,eraserPaint)
-//                else paintCanvas.drawPath(mCurrentPath,paint)
             }
             MotionEvent.ACTION_UP -> {
                 action.onUp(event.x,event.y,mCurrentPath)
@@ -94,8 +91,9 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
         return true
     }
 
-    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
-        super.onLayout(changed, left, top, right, bottom)
+    //原本onLayout()方法中调用bitmap修改到这里
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
         setBitmap()
     }
     override fun onDraw(canvas: Canvas) {
@@ -116,7 +114,7 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
             return
         }
         pathList.removeLast()
-        //这行代码是把整个canvas变透明
+        //把paintCanvas的bitmap变透明
         paintCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
         val newPaint = Paint(paint)
         for (pathEntry in pathList) {
