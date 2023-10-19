@@ -3,6 +3,8 @@ package com.example.hellomission.ui
 import com.example.hellomission.base.DrawAction
 import com.example.hellomission.ui.action.CircleAction
 import com.example.hellomission.ui.action.LineAction
+import com.example.hellomission.ui.action.RecAction
+import com.example.hellomission.ui.action.StraightAction
 import com.example.hellomission.utils.ShapeConstant
 
 //用来返回action对象，避免重复创建
@@ -15,8 +17,12 @@ object ActionManager {
             }
             ShapeConstant.CIRCLE->{
                 actions.putIfAbsent(shape,CircleAction())
-            }else -> {
-
+            }
+            ShapeConstant.STRAIGHT->{
+                actions.putIfAbsent(shape,StraightAction())
+            }
+            ShapeConstant.RECTANGLE->{
+                actions.putIfAbsent(shape,RecAction())
             }
 
         }

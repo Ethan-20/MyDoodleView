@@ -29,6 +29,8 @@ class DoodleActivity : AppCompatActivity() {
     private lateinit var lineButton:Button
     private lateinit var circleButton:Button
     private lateinit var pictureButton:Button
+    private lateinit var straightButton:Button
+    private lateinit var recButton :Button
     private val viewModel: DoodleViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,6 +55,8 @@ class DoodleActivity : AppCompatActivity() {
         lineButton = binding.btnLine
         circleButton = binding.btnCircle
         pictureButton = binding.btnPicture
+        straightButton = binding.btnStraight
+        recButton = binding.btnRec
     }
 
     private fun initListener(){
@@ -89,6 +93,12 @@ class DoodleActivity : AppCompatActivity() {
         pictureButton.setOnClickListener{
             generatePicture()
         }
+        straightButton.setOnClickListener {
+            doodleView.setAction(ShapeConstant.STRAIGHT)
+        }
+        recButton.setOnClickListener {
+            doodleView.setAction(ShapeConstant.RECTANGLE)
+        }
     }
 
     override fun onResume() {
@@ -116,7 +126,6 @@ class DoodleActivity : AppCompatActivity() {
 
     //为view加载数据
     private fun loadPath() {
-        TODO("Not yet implemented")
         //或者打开最后一次保存的文件，那么就需要将最后一个文件文件名保存在sp中,如果是第一次打开或者没有保存过呢？
         //查询sp如果没有记录，那么传入的file也找不到，抛出异常，DataUtil还是会返回笔迹列表对象，问题不大，就是解耦性好不好呢？
         //文件存放在私有文件夹里，不需要路径类
