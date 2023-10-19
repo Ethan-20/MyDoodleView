@@ -25,7 +25,7 @@ import kotlin.math.sqrt
 
 class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,attrs){
     private val TAG: String = "DoodleView"
-    private lateinit var mCurrentPath: Path
+    private  var mCurrentPath = Path()
     private lateinit var drawPathEntry: WeakReference<DrawPathEntry>
     private var action: DrawAction
     private var pathList =  ArrayList<DrawPathEntry>()
@@ -76,11 +76,14 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
             MotionEvent.ACTION_MOVE ->{
                 action.onMove(event.x,event.y,mCurrentPath)
                 //把path画在bitmap上
-                if(isEraser) paintCanvas.drawPath(mCurrentPath,eraserPaint)
-                else paintCanvas.drawPath(mCurrentPath,paint)
+//                if(isEraser) paintCanvas.drawPath(mCurrentPath,eraserPaint)
+//                else paintCanvas.drawPath(mCurrentPath,paint)
             }
             MotionEvent.ACTION_UP -> {
                 action.onUp(event.x,event.y,mCurrentPath)
+                if(isEraser) paintCanvas.drawPath(mCurrentPath,eraserPaint)
+                else paintCanvas.drawPath(mCurrentPath,paint)
+                mCurrentPath.reset()
             }
         }
         postInvalidate()
@@ -92,21 +95,12 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
         setBitmap()
     }
     override fun onDraw(canvas: Canvas) {
-//        super.onDraw(canvas)
+        super.onDraw(canvas)
         if (!bitmap.isRecycled) {
             canvas.drawBitmap(bitmap,0f,0f,null)
         }
-//        val newPaint = Paint(paint)
-//        for (pathEntry in pathList) {
-//            if (pathEntry.isEraser){
-//                canvas.drawPath(pathEntry.path,eraserPaint)
-//            }
-//            else{
-//                newPaint.color = pathEntry.color
-//                newPaint.strokeWidth = pathEntry.width
-//                canvas.drawPath(pathEntry.path,newPaint)
-//            }
-//        }
+        if(isEraser) canvas.drawPath(mCurrentPath,eraserPaint)
+        else canvas.drawPath(mCurrentPath,paint)
     }
 
     //撤销操作
