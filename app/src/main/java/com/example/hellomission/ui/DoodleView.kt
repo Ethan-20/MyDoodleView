@@ -34,6 +34,7 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
     private lateinit var bitmap: Bitmap
     private val eraserPaint:Paint = Paint()
     private var isEraser = false
+    private var isDrawing = false
     init {
         //anti Alias
         paint.isAntiAlias = true
@@ -57,7 +58,8 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
 
     fun setAction(shape:Int){
         //防止在用橡皮擦时切换成除了线外其他图形
-        if(isEraser) return
+        if(isEraser&&shape!=ShapeConstant.LINE) return
+        isEraser = false
         action = ActionManager.getAction(shape)
     }
 
@@ -74,6 +76,7 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
             }
 
             MotionEvent.ACTION_MOVE ->{
+                isDrawing = true
                 action.onMove(event.x,event.y,mCurrentPath)
                 //把path画在bitmap上
 //                if(isEraser) paintCanvas.drawPath(mCurrentPath,eraserPaint)
@@ -83,7 +86,8 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
                 action.onUp(event.x,event.y,mCurrentPath)
                 if(isEraser) paintCanvas.drawPath(mCurrentPath,eraserPaint)
                 else paintCanvas.drawPath(mCurrentPath,paint)
-                mCurrentPath.reset()
+//                mCurrentPath.reset()
+                isDrawing = false
             }
         }
         postInvalidate()
@@ -96,11 +100,14 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
     }
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+
         if (!bitmap.isRecycled) {
             canvas.drawBitmap(bitmap,0f,0f,null)
         }
-        if(isEraser) canvas.drawPath(mCurrentPath,eraserPaint)
-        else canvas.drawPath(mCurrentPath,paint)
+        if (isDrawing){
+            if(isEraser) canvas.drawPath(mCurrentPath,eraserPaint)
+            else canvas.drawPath(mCurrentPath,paint)
+        }
     }
 
     //撤销操作
