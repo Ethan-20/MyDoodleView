@@ -4,8 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <com.example.hellomission.ui.DoodleView
+        android:background="@color/purple_200"
             android:id="@+id/doodle_view"
-            android:background="@color/purple_200"
             android:layout_width="match_parent"
             android:layout_height="500dp" />
 

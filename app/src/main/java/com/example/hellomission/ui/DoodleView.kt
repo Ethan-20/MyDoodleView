@@ -42,10 +42,10 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
         paint.color = Color.RED
         paint.style = Paint.Style.STROKE
         // make eraser functional
-//        eraserPaint.style = Paint.Style.STROKE;
-//        eraserPaint.strokeWidth = 100f
-//        eraserPaint.color = Color.TRANSPARENT
-//        eraserPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
+        eraserPaint.style = Paint.Style.STROKE;
+        eraserPaint.strokeWidth = 100f
+        eraserPaint.color = Color.TRANSPARENT
+        eraserPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
         //这里的action实例对象都需要设置成单例
         action = ActionManager.getAction(ShapeConstant.LINE)
 
@@ -76,7 +76,8 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
             MotionEvent.ACTION_MOVE ->{
                 action.onMove(event.x,event.y,mCurrentPath)
                 //把path画在bitmap上
-//                paintCanvas.drawPath(mCurrentPath,paint)
+                if(isEraser) paintCanvas.drawPath(mCurrentPath,eraserPaint)
+                else paintCanvas.drawPath(mCurrentPath,paint)
             }
             MotionEvent.ACTION_UP -> {
                 action.onUp(event.x,event.y,mCurrentPath)
@@ -91,23 +92,21 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
         setBitmap()
     }
     override fun onDraw(canvas: Canvas) {
-        super.onDraw(canvas)
-//        if (!bitmap.isRecycled) {
-//            canvas.drawBitmap(bitmap,0f,0f,null)
-//        }
-        canvas.drawColor(Color.TRANSPARENT,PorterDuff.Mode.CLEAR)
-        val newPaint = Paint(paint)
-        for (pathEntry in pathList) {
-            if (pathEntry.isEraser){
-                canvas.drawPath(pathEntry.path,eraserPaint)
-            }
-            else{
-                newPaint.color = pathEntry.color
-                newPaint.strokeWidth = pathEntry.width
-                canvas.drawPath(pathEntry.path,newPaint)
-            }
-
+//        super.onDraw(canvas)
+        if (!bitmap.isRecycled) {
+            canvas.drawBitmap(bitmap,0f,0f,null)
         }
+//        val newPaint = Paint(paint)
+//        for (pathEntry in pathList) {
+//            if (pathEntry.isEraser){
+//                canvas.drawPath(pathEntry.path,eraserPaint)
+//            }
+//            else{
+//                newPaint.color = pathEntry.color
+//                newPaint.strokeWidth = pathEntry.width
+//                canvas.drawPath(pathEntry.path,newPaint)
+//            }
+//        }
     }
 
     //撤销操作
@@ -118,6 +117,17 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
         pathList.removeLast()
         //这行代码是把整个canvas变透明
         paintCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
+        val newPaint = Paint(paint)
+        for (pathEntry in pathList) {
+            if (pathEntry.isEraser){
+                paintCanvas.drawPath(pathEntry.path,eraserPaint)
+            }
+            else{
+                newPaint.color = pathEntry.color
+                newPaint.strokeWidth = pathEntry.width
+                paintCanvas.drawPath(pathEntry.path,newPaint)
+            }
+        }
         postInvalidate()
     }
 
