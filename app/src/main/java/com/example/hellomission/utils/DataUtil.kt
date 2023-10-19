@@ -1,48 +1,47 @@
 package com.example.hellomission.utils
 
 import android.content.Context
-import android.content.res.AssetManager
 import android.util.Log
 import com.example.hellomission.bean.DrawPathEntry
-import fr.arnaudguyon.xmltojsonlib.JsonToXml
-import fr.arnaudguyon.xmltojsonlib.XmlToJson
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.io.File
+import java.io.OutputStreamWriter
 
 
-final class DataUtil(context: Context) {
-    val TAG ="Datautil"
-    val xmlFile = "generatedXML.xml"
-//    val xml = xmlFile.readText()
-    private val mContext:Context = context
-    companion object{
+object DataUtil {
+    val TAG ="DataUtil"
+    //todo 保存文件到本地，需要返回处理结果
+    fun saveDataToFile(context: Context, file:String, list:ArrayList<DrawPathEntry>):Boolean{
+        try {
+            context.filesDir
+            val json = Json { prettyPrint = true }
+            val jsonString = json.encodeToString(list)
 
-    }
-    fun savePathEntry(list:ArrayList<DrawPathEntry>){
-        //把list的节点保存到xml中
-            val entryAsJson = Json.encodeToString(list)
-            val jsonToXml = JsonToXml.Builder(entryAsJson).build()
-            val xmlString = jsonToXml.toString()
-            Log.d(TAG,xmlString)
-            generateXML(xmlString)
-    }
+            val fileOutputStream = context.openFileOutput(file, Context.MODE_PRIVATE)
+            val writer = OutputStreamWriter(fileOutputStream)
 
-    //生成xml文件
-    fun generateXML(xmlString:String){
-        Log.d(TAG,"generating xml")
-    }
-
-    //从xml文件中读取转成json,再转成list
-    fun parseXML():ArrayList<DrawPathEntry>{
-        val assetManager: AssetManager = mContext.getAssets()
-        val inputStream = assetManager.open(xmlFile)
-        val xmlToJson = XmlToJson.Builder(inputStream, null).build()
-        val jsonString = xmlToJson.toString()
-        //获取到pathlist
-        val list = Json.decodeFromString<ArrayList<DrawPathEntry>>(jsonString)
-        inputStream.close()
-        return list
+            writer.use {
+                it.write(jsonString)
+            }
+            return true
+        } catch (e: Exception) {
+            Log.e(TAG, "Error saving data to file", e)
+            return false
+        }
     }
 
+    fun loadPathFromFile(context: Context, file:String):ArrayList<DrawPathEntry>{
+        try {
+            val fileInputStream = context.openFileInput(file)
+            val json = Json { prettyPrint = true }
+            val jsonString = fileInputStream.reader().use { it.readText() }
+
+            return json.decodeFromString(jsonString)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error loading data from file", e)
+            return ArrayList()
+        }
+    }
 
 }

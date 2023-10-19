@@ -29,7 +29,7 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
     private lateinit var mCurrentPath :Path
     private lateinit var drawPathEntry: WeakReference<DrawPathEntry>
     private var action: DrawAction
-    private var pathList = ArrayList<DrawPathEntry>()
+    private lateinit var pathList : ArrayList<DrawPathEntry>
     private val paint: Paint by lazy{ Paint() }
     private lateinit var paintCanvas:Canvas
     private lateinit var bitmap: Bitmap
@@ -188,8 +188,12 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
     fun getPathList():ArrayList<DrawPathEntry>{
         return pathList
     }
-    //从xml文件中恢复笔迹
+
     fun loadPathList(list:ArrayList<DrawPathEntry>){
-        this.pathList = list
+        list.let { this.pathList = it }
+    }
+
+    fun getBitmap(): Bitmap {
+        return bitmap
     }
 }
