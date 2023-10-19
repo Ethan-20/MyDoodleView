@@ -9,27 +9,31 @@ import android.graphics.Path
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.graphics.Xfermode
+import android.graphics.drawable.shapes.Shape
 import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import com.example.hellomission.base.DrawAction
 import com.example.hellomission.bean.DrawPathEntry
 import com.example.hellomission.bean.PaintColorType
 import com.example.hellomission.bean.PaintWidthType
+import com.example.hellomission.ui.action.LineAction
+import com.example.hellomission.utils.ShapeConstant
+import java.lang.ref.WeakReference
+import kotlin.math.sqrt
 
 class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,attrs){
     private val TAG: String = "DoodleView"
+    private lateinit var mCurrentPath: Path
+    private lateinit var drawPathEntry: WeakReference<DrawPathEntry>
+    private var action: DrawAction
+    private var pathList =  ArrayList<DrawPathEntry>()
     private val paint: Paint = Paint()
-    private val eraserPaint:Paint = Paint()
-    private var pathList = ArrayList<DrawPathEntry>()
-    private lateinit var bitmap:Bitmap
     private lateinit var paintCanvas:Canvas
+    private lateinit var bitmap: Bitmap
+    private val eraserPaint:Paint = Paint()
     private var isEraser = false
-    private var startX = 0f
-    private var startY = 0f
-    private var endX = 0f
-    private var endY = 0f
-    private var mCurrentPath:Path = Path()
     init {
         //anti Alias
         paint.isAntiAlias = true
@@ -38,44 +42,44 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
         paint.color = Color.RED
         paint.style = Paint.Style.STROKE
         // make eraser functional
-        eraserPaint.style = Paint.Style.STROKE;
-        eraserPaint.strokeWidth = 100f
-        eraserPaint.color = Color.TRANSPARENT;
-        eraserPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
+//        eraserPaint.style = Paint.Style.STROKE;
+//        eraserPaint.strokeWidth = 100f
+//        eraserPaint.color = Color.TRANSPARENT
+//        eraserPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
+        //这里的action实例对象都需要设置成单例
+        action = ActionManager.getAction(ShapeConstant.LINE)
 
-        // It'd be impossible if there's no bitmap and canvas in this view
-        //but I don't know the relationship between bitmap and canvas
-        //therefore I'll fix it later
     }
     fun setBitmap(){
         bitmap = Bitmap.createBitmap(width,height,Bitmap.Config.ARGB_8888)
         paintCanvas = Canvas(bitmap)
     }
 
+    fun setAction(shape:Int){
+        //防止在用橡皮擦时切换成除了线外其他图形
+        if(isEraser) return
+        action = ActionManager.getAction(shape)
+    }
+
     override fun onTouchEvent(event: MotionEvent?): Boolean {
 //        Log.d(TAG,"EventAction = ${event!!.action}")
-        val newPaint = if(isEraser) eraserPaint else Paint(paint)
         when(event!!.action){
             MotionEvent.ACTION_DOWN ->
             {
-                startX = event.x
-                startY = event.y
-                mCurrentPath =  Path()
-                mCurrentPath.moveTo(startX,startY)
+                mCurrentPath = Path()
+                //这里的弱引用合理吗？
+                drawPathEntry = WeakReference(DrawPathEntry(mCurrentPath,paint.color,paint.strokeWidth,isEraser))
+                action.onDown(event.x,event.y,mCurrentPath)
+                drawPathEntry.get()?.let { pathList.add(it) }
             }
 
             MotionEvent.ACTION_MOVE ->{
-                endX = event.x
-                endY = event.y
-                //绘制贝塞尔曲线
-                mCurrentPath.quadTo(startX,startY,endX,endY)
-                paintCanvas.drawPath(mCurrentPath,newPaint)
-                startX = endX
-                startY = endY
-                Log.d(TAG,"i'm moving")
+                action.onMove(event.x,event.y,mCurrentPath)
+                //把path画在bitmap上
+//                paintCanvas.drawPath(mCurrentPath,paint)
             }
             MotionEvent.ACTION_UP -> {
-                pathList.add(DrawPathEntry(mCurrentPath, newPaint))
+                action.onUp(event.x,event.y,mCurrentPath)
             }
         }
         postInvalidate()
@@ -88,10 +92,22 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
     }
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        if (!bitmap.isRecycled) {
-            canvas.drawBitmap(bitmap,0f,0f,null)
-        }
+//        if (!bitmap.isRecycled) {
+//            canvas.drawBitmap(bitmap,0f,0f,null)
+//        }
+        canvas.drawColor(Color.TRANSPARENT,PorterDuff.Mode.CLEAR)
+        val newPaint = Paint(paint)
+        for (pathEntry in pathList) {
+            if (pathEntry.isEraser){
+                canvas.drawPath(pathEntry.path,eraserPaint)
+            }
+            else{
+                newPaint.color = pathEntry.color
+                newPaint.strokeWidth = pathEntry.width
+                canvas.drawPath(pathEntry.path,newPaint)
+            }
 
+        }
     }
 
     //撤销操作
@@ -101,10 +117,7 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
         }
         pathList.removeLast()
         //这行代码是把整个canvas变透明
-        paintCanvas.drawColor(Color.TRANSPARENT,PorterDuff.Mode.CLEAR)
-        for (entry in pathList) {
-            paintCanvas.drawPath(entry.path,entry.paint)
-        }
+        paintCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
         postInvalidate()
     }
 
@@ -118,14 +131,14 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
     //设置画笔粗细
     fun setPaintWidth(type:PaintWidthType){
         when(type){
-            PaintWidthType.small ->{
+            PaintWidthType.SMALL ->{
                 paint.strokeWidth = 2f
             }
 
-            PaintWidthType.middle -> {
+            PaintWidthType.MIDDLE -> {
                 paint.strokeWidth = 5f
             }
-            PaintWidthType.large -> {
+            PaintWidthType.LARGE -> {
                 paint.strokeWidth = 10f
             }
         }
@@ -155,6 +168,7 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
             }
             PaintColorType.RUBBER -> {
                 isEraser = true
+                action = ActionManager.getAction(ShapeConstant.LINE)
             }
         }
     }

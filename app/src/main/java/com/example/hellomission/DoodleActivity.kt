@@ -6,7 +6,9 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.hellomission.bean.PaintColorType
 import com.example.hellomission.bean.PaintWidthType
 import com.example.hellomission.ui.DoodleView
+import com.example.hellomission.ui.action.CircleAction
 import com.example.hellomission.utils.DataUtil
+import com.example.hellomission.utils.ShapeConstant
 
 class DoodleActivity : AppCompatActivity() {
     private lateinit var  doodleView: DoodleView
@@ -18,6 +20,8 @@ class DoodleActivity : AppCompatActivity() {
     private lateinit var cleanButton : Button
     private lateinit var rubberButton:Button
     private lateinit var saveButton:Button
+    private lateinit var lineButton:Button
+    private lateinit var circleButton:Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,13 +40,15 @@ class DoodleActivity : AppCompatActivity() {
         cleanButton = findViewById(R.id.btn_clean)
         rubberButton = findViewById(R.id.btn_rubber)
         saveButton = findViewById(R.id.btn_save)
+        lineButton = findViewById(R.id.btn_line)
+        circleButton = findViewById(R.id.btn_circle)
     }
     private fun initListener(){
         smallButton.setOnClickListener {
-            doodleView.setPaintWidth(PaintWidthType.small)
+            doodleView.setPaintWidth(PaintWidthType.SMALL)
         }
         middleButton.setOnClickListener {
-            doodleView.setPaintWidth(PaintWidthType.middle)
+            doodleView.setPaintWidth(PaintWidthType.MIDDLE)
         }
         whiteButton.setOnClickListener {
             doodleView.setPaintColor(PaintColorType.WHITE)
@@ -61,6 +67,12 @@ class DoodleActivity : AppCompatActivity() {
         }
         saveButton.setOnClickListener{
             DataUtil(this).savePathEntry(doodleView.getPathList())
+        }
+        lineButton.setOnClickListener{
+            doodleView.setAction(ShapeConstant.LINE)
+        }
+        circleButton.setOnClickListener {
+            doodleView.setAction(ShapeConstant.CIRCLE)
         }
     }
 
