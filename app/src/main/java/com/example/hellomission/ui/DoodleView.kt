@@ -24,7 +24,7 @@ import java.lang.ref.WeakReference
 import kotlin.math.sqrt
 
 class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,attrs){
-   //懒加载
+
     private val TAG: String = "DoodleView"
     private lateinit var mCurrentPath :Path
     private lateinit var drawPathEntry: WeakReference<DrawPathEntry>
@@ -69,10 +69,8 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
             MotionEvent.ACTION_DOWN ->
             {
                 mCurrentPath = Path()
-                //这里的弱引用合理吗？
                 drawPathEntry = WeakReference(DrawPathEntry(mCurrentPath,paint.color,paint.strokeWidth,isEraser))
                 action.onDown(event.x,event.y,mCurrentPath)
-                drawPathEntry.get()?.let { pathList.add(it) }
             }
 
             MotionEvent.ACTION_MOVE ->{
@@ -83,6 +81,10 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
                 action.onUp(event.x,event.y,mCurrentPath)
                 if(isEraser) paintCanvas.drawPath(mCurrentPath,eraserPaint)
                 else paintCanvas.drawPath(mCurrentPath,paint)
+                if(isDrawing)
+                {
+                    drawPathEntry.get()?.let { pathList.add(it) }
+                }
 //                mCurrentPath.reset()
                 isDrawing = false
             }
