@@ -29,7 +29,8 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
     private lateinit var mCurrentPath :Path
     private lateinit var drawPathEntry: WeakReference<DrawPathEntry>
     private var action: DrawAction
-    private lateinit var pathList : ArrayList<DrawPathEntry>
+    //pathlist应该由DataUtil进行初始化，所以它初始化的位置在init中进行
+    private var pathList = ArrayList<DrawPathEntry>()
     private val paint: Paint by lazy{ Paint() }
     private lateinit var paintCanvas:Canvas
     private lateinit var bitmap: Bitmap
@@ -56,9 +57,15 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
         paintCanvas = Canvas(bitmap)
     }
 
+    fun exportViewAsBitmap(): Bitmap {
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        this.draw(canvas)
+        return bitmap
+    }
+
+    //当选择了action时说明，就要退出橡皮擦模式
     fun setAction(shape:ShapeConstant){
-        //防止在用橡皮擦时切换成除了线外其他图形
-        if(isEraser&&shape!=ShapeConstant.LINE) return
         isEraser = false
         action = ActionManager.getAction(shape)
     }
@@ -93,7 +100,7 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
         return true
     }
 
-    //原本onLayout()方法中调用bitmap修改到这里
+    //原本onLayout()方法中调用setBitmap()修改到这里
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
         setBitmap()
@@ -155,7 +162,7 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
         }
     }
 
-    // 设置画笔类型
+    // 设置画笔颜色
     fun setPaintColor(type:PaintColorType){
         isEraser = false
         when(type){
@@ -193,7 +200,4 @@ class DoodleView constructor(context: Context,attrs:AttributeSet):View(context,a
         list.let { this.pathList = it }
     }
 
-    fun getBitmap(): Bitmap {
-        return bitmap
-    }
 }

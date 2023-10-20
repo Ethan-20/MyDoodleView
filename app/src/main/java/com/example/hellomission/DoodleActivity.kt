@@ -1,11 +1,16 @@
 package com.example.hellomission
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.example.hellomission.bean.PaintColorType
 import com.example.hellomission.bean.PaintWidthType
 import com.example.hellomission.databinding.ActivityDoodleBinding
@@ -32,6 +37,7 @@ class DoodleActivity : AppCompatActivity() {
     private lateinit var straightButton:Button
     private lateinit var recButton :Button
     private val viewModel: DoodleViewModel by viewModels()
+    val REQUEST_WRITE_EXTERNAL_STORAGE = 1
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_doodle)
@@ -111,9 +117,27 @@ class DoodleActivity : AppCompatActivity() {
         viewModel.savePath(doodleView.getPathList())
     }
 
-    fun generatePicture(){
-        BitmapUtil.generatePicture(this,doodleView.getBitmap())
+    private fun generatePicture(){
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            // 如果权限尚未授予，请求权限
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), REQUEST_WRITE_EXTERNAL_STORAGE)
+        } else {
+            BitmapUtil.generatePicture(this,doodleView.exportViewAsBitmap())
+        }
     }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        if (requestCode == REQUEST_WRITE_EXTERNAL_STORAGE) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                BitmapUtil.generatePicture(this,doodleView.exportViewAsBitmap())            } else {
+                // 用户拒绝了权限请求，您可以提示用户或执行适当的操作
+                Toast.makeText(this,"由于权限问题，无法存储文件",Toast.LENGTH_SHORT)
+            }
+        }
+    }
+
     fun saveData(){
         //这里要发起一个activity询问是否保存在原文件夹或者另创文件
         //这里简化，只保留在原文件夹，返回处理结果
