@@ -5,17 +5,17 @@ import com.example.hellomission.base.DrawAction
 
 class LineAction : DrawAction() {
 
-    override fun onDown(x: Float, y: Float,mCurrentPath:Path) {
+    override fun onDown(x: Float, y: Float, mCurrentPath: Path) {
 
-        mCurrentPath.moveTo(x,y)
+        mCurrentPath.moveTo(x, y)
     }
 
-    override fun onMove(x: Float, y: Float,mCurrentPath:Path) {
+    override fun onMove(x: Float, y: Float, mCurrentPath: Path) {
 
-        mCurrentPath.lineTo(x,y)
+        mCurrentPath.lineTo(x, y)
     }
 
-    override fun onUp(x: Float, y: Float,mCurrentPath:Path) {
+    override fun onUp(x: Float, y: Float, mCurrentPath: Path) {
 
     }
 

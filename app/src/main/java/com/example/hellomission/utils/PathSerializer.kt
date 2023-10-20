@@ -12,9 +12,9 @@ import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
 
 @Serializer(forClass = Path::class)
-object PathSerializer:KSerializer<Path> {
+object PathSerializer : KSerializer<Path> {
     override val descriptor: SerialDescriptor
-        get() = PrimitiveSerialDescriptor("android.graphics.Path",PrimitiveKind.STRING)
+        get() = PrimitiveSerialDescriptor("android.graphics.Path", PrimitiveKind.STRING)
 
 
     override fun deserialize(decoder: Decoder): Path {
@@ -24,17 +24,17 @@ object PathSerializer:KSerializer<Path> {
     }
 
     override fun serialize(encoder: Encoder, value: Path) {
-       //将path 转化成可序列化的形式
+        //将path 转化成可序列化的形式
         val pathAsString = convertPathToString(value)
         encoder.encodeString(pathAsString)
     }
 
-    private fun convertPathToString(path:Path):String{
+    private fun convertPathToString(path: Path): String {
         //实现将path转换为字符串的逻辑，比如json
         return Json.encodeToString(path)
     }
 
-    private fun convertStringToPath(pathAsString:String):Path{
+    private fun convertStringToPath(pathAsString: String): Path {
         //实现将字符串转换回path的逻辑
         return Json.decodeFromString<Path>(pathAsString)
     }
